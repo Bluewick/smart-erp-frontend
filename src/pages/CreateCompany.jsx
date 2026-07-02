@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Button from "../components/Button";
 
-export default function CreateCompany({setActivePage}) {
+export default function CreateCompany({ setActivePage }) {
   const [formData, setFormData] = useState({
     companyPath: "",
     companyName: "",
@@ -29,9 +29,7 @@ export default function CreateCompany({setActivePage}) {
     }));
   };
 
-  const handleBrowsePath = () => {
-
-  };
+  const handleBrowsePath = () => {};
 
   const handleCreate = () => {
     console.log(formData);
@@ -40,7 +38,6 @@ export default function CreateCompany({setActivePage}) {
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-gray-100 py-10">
       <div className="mx-auto w-3xl max-w-5xl rounded-2xl border border-gray-200 bg-white shadow-xl">
-
         {/* Header */}
         <div className="border-b border-gray-200 px-8 py-6">
           <h1 className="text-3xl font-bold text-gray-900">
@@ -53,7 +50,6 @@ export default function CreateCompany({setActivePage}) {
         </div>
 
         <div className="space-y-10 p-8">
-
           {/* General */}
           <section>
             <h2 className="mb-5 text-xl font-semibold text-gray-800">
@@ -61,7 +57,6 @@ export default function CreateCompany({setActivePage}) {
             </h2>
 
             <div className="flex flex-col gap-2 space-y-5">
-
               <div>
                 <label className="mb-2 block font-medium text-gray-700">
                   Company Data Path
@@ -76,9 +71,7 @@ export default function CreateCompany({setActivePage}) {
                     placeholder="C:\\Companies"
                   />
 
-                  <Button onClick={handleBrowsePath}>
-                    Browse
-                  </Button>
+                  <Button onClick={handleBrowsePath}>Browse</Button>
                 </div>
               </div>
 
@@ -107,7 +100,6 @@ export default function CreateCompany({setActivePage}) {
                   className="w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                 />
               </div>
-
             </div>
           </section>
 
@@ -118,7 +110,6 @@ export default function CreateCompany({setActivePage}) {
             </h2>
 
             <div className="flex flex-col gap-2 space-y-5">
-
               <div>
                 <label className="mb-2 block font-medium text-gray-700">
                   Address Line 1
@@ -146,7 +137,6 @@ export default function CreateCompany({setActivePage}) {
               </div>
 
               <div className="grid grid-cols-3 gap-5">
-
                 <div>
                   <label className="mb-2 block font-medium text-gray-700">
                     State
@@ -185,7 +175,6 @@ export default function CreateCompany({setActivePage}) {
                     className="w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                   />
                 </div>
-
               </div>
             </div>
           </section>
@@ -197,7 +186,6 @@ export default function CreateCompany({setActivePage}) {
             </h2>
 
             <div className="grid grid-cols-3 gap-5">
-
               <div>
                 <label className="mb-2 block font-medium text-gray-700">
                   Telephone
@@ -236,11 +224,9 @@ export default function CreateCompany({setActivePage}) {
                   className="w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                 />
               </div>
-
             </div>
 
             <div className="flex flex-col gap-2 mt-5 space-y-5">
-
               <div>
                 <label className="mb-2 block font-medium text-gray-700">
                   E-Mail
@@ -266,7 +252,6 @@ export default function CreateCompany({setActivePage}) {
                   className="w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                 />
               </div>
-
             </div>
           </section>
 
@@ -277,7 +262,6 @@ export default function CreateCompany({setActivePage}) {
             </h2>
 
             <div className="grid grid-cols-2 gap-5">
-
               <div>
                 <label className="mb-2 block font-medium text-gray-700">
                   Base Currency Symbol
@@ -331,26 +315,18 @@ export default function CreateCompany({setActivePage}) {
                   className="w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                 />
               </div>
-
             </div>
           </section>
-
         </div>
 
         {/* Footer */}
         <div className="flex justify-end gap-3 border-t border-gray-200 bg-gray-50 px-8 py-5">
-          <Button onClick={() => setActivePage('list')}>
-            Cancel
-          </Button>
+          <Button onClick={() => setActivePage("list")}>Cancel</Button>
 
-          <Button
-            isActive
-            onClick={handleCreate}
-          >
+          <Button isActive onClick={handleCreate}>
             Create Company
           </Button>
         </div>
-
       </div>
     </div>
   );
