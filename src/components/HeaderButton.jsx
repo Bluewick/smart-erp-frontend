@@ -1,10 +1,12 @@
 import React from "react";
 
-export default function HeaderButton({ children, shortcut, onClick }) {
+export default function HeaderButton({ children, shortcut, onClick, active }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 px-3 py-2 bg-blue-800 text-sm text-white rounded-md hover:bg-blue-900 transition-colors duration-200"
+      className={`flex items-center gap-2 px-3 py-2 text-sm text-white rounded-md transition-colors duration-200 ${
+        active ? "bg-blue-950" : "bg-blue-800 hover:bg-blue-900"
+      }`}
     >
       <span className="text-sm">{children}</span>
 
