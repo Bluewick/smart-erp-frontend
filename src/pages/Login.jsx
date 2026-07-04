@@ -8,6 +8,9 @@ export default function Login() {
     password: "",
   });
 
+  const API_URL = import.meta.env.VITE_API_URL;
+  const loginUrl = API_URL + "/api/auth/login";
+
   const [showPassword, setShowPassword] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -27,7 +30,7 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5210/api/auth/login", {
+      const response = await fetch(loginUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -125,7 +128,7 @@ export default function Login() {
             type="submit"
             className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700 active:scale-[0.98]"
           >
-            Login
+            {isLoading ? 'Logging in...' : 'Login'}
           </button>
         </form>
 

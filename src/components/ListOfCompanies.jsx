@@ -2,13 +2,48 @@ import React, { useEffect, useState } from "react";
 import Button from "./Button";
 import { FolderOpen, Plus } from "lucide-react";
 import CreateCompany from "../pages/CreateCompany";
+import { useAuth } from "../contexts/authContext";
+import CompanyList from "./CompanyList";
 
 export default function ListOfCompanies() {
+  const { user, token } = useAuth();
+  const [companies, setCompanies] = useState([]);
   const [activeButton, setactiveButton] = useState(1);
   const [showPathInput, setShowPathInput] = useState(false);
   const [activePage, setActivePage] = useState("list");
 
-  console.log(activeButton);
+  console.log("user", user);
+  console.log("companies", companies);
+  const API_URL = import.meta.env.VITE_API_URL;
+  const companiesUrl = API_URL + "/api/companies";
+
+  useEffect(() => {
+    const fetchCompanies = async () => {
+
+      try {
+        const res = await fetch(companiesUrl, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const result = await res.json();
+
+        if (result.success) {
+          setCompanies(result.data);
+        } else {
+          console.error(result.message);
+        }
+      } catch (err) {
+        console.error("Failed to fetch companies:", err);
+      }
+    };
+
+    fetchCompanies();
+  }, [token]);
+  
 
   useEffect(() => {
     function handleKeyDown(e) {
@@ -61,8 +96,8 @@ export default function ListOfCompanies() {
   }
 
   return (
-    <div className="flex justify-center p-8">
-      <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-lg">
+    <div className="flex flex-col gap-4 justify-center p-8">
+      {/* <div className="m-auto max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-lg">
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-gray-900">Companies</h2>
           <p className="mt-1 text-sm text-gray-500">
@@ -103,7 +138,12 @@ export default function ListOfCompanies() {
             </div>
           )}
         </div>
-      </div>
+      </div> */}
+
+      {/* {companies && <div className="w-full m-auto max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-lg">
+          {companies.map(i => i.company_name)}
+      </div>} */}
+      <CompanyList setActivePage={setActivePage} />
     </div>
   );
 }

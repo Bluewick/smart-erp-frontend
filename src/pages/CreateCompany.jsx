@@ -1,13 +1,21 @@
 import { useState } from "react";
 import Button from "../components/Button";
+import { useAuth } from "../contexts/authContext";
+import { CheckCircle2, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function CreateCompany({ setActivePage }) {
+  const navigate = useNavigate();
+  const { token } = useAuth();
+
+  const [alert, setAlert] = useState(null);
+  const [errors, setErrors] = useState({});
+
   const [formData, setFormData] = useState({
-    companyPath: "",
     companyName: "",
     mailingName: "",
-    address1: "",
-    address2: "",
+    addressLine1: "",
+    addressLine2: "",
     state: "",
     country: "",
     pincode: "",
@@ -17,109 +25,195 @@ export default function CreateCompany({ setActivePage }) {
     email: "",
     website: "",
     currencySymbol: "₹",
-    formalName: "Indian Rupee",
-    financialYear: "2026-04-01",
-    booksBeginning: "2026-04-01",
+    currencyName: "Indian Rupee",
+    financialYearFrom: "2026-04-01",
+    booksBeginningFrom: "2026-04-01",
   });
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [name]: value,
     }));
+    
+    // Clear validation error dynamically when user typing
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
   };
 
-  const handleBrowsePath = () => {};
+  
+  const API_URL = import.meta.env.VITE_API_URL;
+  const companiesUrl = API_URL + "/api/companies";
 
-  const handleCreate = () => {
-    console.log(formData);
+  const validateForm = () => {
+    let newErrors = {};
+    const requiredFields = [
+      { key: "companyName", label: "Company Name" },
+      { key: "mailingName", label: "Mailing Name" },
+      { key: "country", label: "Country" },
+      { key: "currencySymbol", label: "Base Currency Symbol" },
+      { key: "currencyName", label: "Formal Name" },
+      { key: "financialYearFrom", label: "Financial Year" },
+      { key: "booksBeginningFrom", label: "Books Beginning From" },
+    ];
+
+    requiredFields.forEach((field) => {
+      if (!formData[field.key] || formData[field.key].trim() === "") {
+        newErrors[field.key] = `${field.label} is a required field.`;
+      }
+    });
+
+    setErrors(newErrors);
+    // Returns true if there are no errors
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleCreateCompany = async (e) => {
+    e.preventDefault();
+    setAlert(null); // Reset previous alert
+
+    // Run explicit verification check
+    if (!validateForm()) {
+      return; 
+    }
+
+    try {
+      const res = await fetch(companiesUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(formData)
+      });
+  
+      const result = await res.json();
+      console.log("result", result);
+      
+      if (res.ok) {
+        setAlert({
+          type: "success",
+          message: `Company "${result?.data?.company_name || formData.companyName}" has been successfully configured and created.`
+        });
+
+        navigate("/gateway");
+        
+        
+      } else {
+        setAlert({ type: "error", message: result?.message || "Failed to create company." });
+      }
+      
+    } catch (error) {
+      console.log(error);
+      setAlert({ type: "error", message: "An unexpected networking error occurred." });
+    }
+  };
+
+  // Helper function to return visual border adjustments for error states
+  const getInputClass = (fieldName) => {
+    const baseClass = "w-full rounded-lg border px-4 py-2.5 focus:outline-none focus:ring-2 transition-all duration-200 ";
+    if (errors[fieldName]) {
+      return baseClass + "border-red-300 bg-red-50 focus:border-red-500 focus:ring-red-200";
+    }
+    return baseClass + "border-gray-300 focus:border-blue-500 focus:ring-blue-200";
   };
 
   return (
-    <div className="flex flex-col items-center w-full min-h-screen bg-gray-100 py-10">
-      <div className="mx-auto w-3xl max-w-5xl rounded-2xl border border-gray-200 bg-white shadow-xl">
+    <div className="flex flex-col items-center w-full min-h-screen bg-gray-100 py-10 px-4">
+      <form onSubmit={handleCreateCompany} className="mx-auto w-full max-w-4xl rounded-2xl border border-gray-200 bg-white shadow-xl overflow-hidden">
+        
         {/* Header */}
         <div className="border-b border-gray-200 px-8 py-6">
           <h1 className="text-3xl font-bold text-gray-900">
             Create New Company
           </h1>
-
           <p className="mt-2 text-gray-500">
-            Fill in the company information below.
+            Fill in the company information below. Fields marked with an asterisk (<span className="text-red-500">*</span>) are required.
           </p>
         </div>
+
+        {/* Improved Success Banner Design */}
+        {alert && alert.type === "success" && (
+          <div className="m-8 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-3 shadow-sm animate-fadeIn">
+            <CheckCircle2 className="text-emerald-600 shrink-0 mt-0.5" size={20} />
+            <div className="flex-1">
+              <h4 className="font-semibold text-emerald-900 text-sm">Success Code 201</h4>
+              <p className="text-emerald-700 text-sm mt-0.5">{alert.message}</p>
+            </div>
+            <button 
+              type="button"
+              onClick={() => setAlert(null)} 
+              className="text-emerald-500 hover:text-emerald-700 hover:bg-emerald-100 p-1 rounded-lg transition-colors"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        )}
+
+        {/* General Error Banner fallback */}
+        {alert && alert.type === "error" && (
+          <div className="m-8 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3">
+            <p className="text-red-700 text-sm flex-1">{alert.message}</p>
+            <button type="button" onClick={() => setAlert(null)} className="text-red-500 hover:text-red-700">
+              <X size={16} />
+            </button>
+          </div>
+        )}
 
         <div className="space-y-10 p-8">
           {/* General */}
           <section>
-            <h2 className="mb-5 text-xl font-semibold text-gray-800">
+            <h2 className="mb-5 text-xl font-semibold text-gray-800  pb-2">
               General Information
             </h2>
 
-            <div className="flex flex-col gap-2 space-y-5">
+            <div className="flex flex-col gap-5">
               <div>
                 <label className="mb-2 block font-medium text-gray-700">
-                  Company Data Path
+                  Company Name <span className="text-red-500">*</span>
                 </label>
-
-                <div className="flex gap-3">
-                  <input
-                    name="companyPath"
-                    value={formData.companyPath}
-                    onChange={handleChange}
-                    className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                    placeholder="C:\\Companies"
-                  />
-
-                  <Button onClick={handleBrowsePath}>Browse</Button>
-                </div>
-              </div>
-
-              <div>
-                <label className="mb-2 block font-medium text-gray-700">
-                  Company Name
-                </label>
-
                 <input
                   name="companyName"
                   value={formData.companyName}
                   onChange={handleChange}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  className={getInputClass("companyName")}
                 />
+                {errors.companyName && <p className="mt-1.5 text-sm text-red-600 font-medium">{errors.companyName}</p>}
               </div>
 
               <div>
                 <label className="mb-2 block font-medium text-gray-700">
-                  Mailing Name
+                  Mailing Name <span className="text-red-500">*</span>
                 </label>
-
                 <input
                   name="mailingName"
                   value={formData.mailingName}
                   onChange={handleChange}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  className={getInputClass("mailingName")}
                 />
+                {errors.mailingName && <p className="mt-1.5 text-sm text-red-600 font-medium">{errors.mailingName}</p>}
               </div>
             </div>
           </section>
 
           {/* Address */}
           <section>
-            <h2 className="pt-3 mb-5 text-xl font-semibold text-gray-800">
+            <h2 className="mb-5 text-xl font-semibold text-gray-800  pb-2">
               Address
             </h2>
 
-            <div className="flex flex-col gap-2 space-y-5">
+            <div className="flex flex-col gap-5">
               <div>
                 <label className="mb-2 block font-medium text-gray-700">
                   Address Line 1
                 </label>
-
                 <input
-                  name="address1"
-                  value={formData.address1}
+                  name="addressLine1"
+                  value={formData.addressLine1}
                   onChange={handleChange}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  className={getInputClass("addressLine1")}
                 />
               </div>
 
@@ -127,52 +221,49 @@ export default function CreateCompany({ setActivePage }) {
                 <label className="mb-2 block font-medium text-gray-700">
                   Address Line 2
                 </label>
-
                 <input
-                  name="address2"
-                  value={formData.address2}
+                  name="addressLine2"
+                  value={formData.addressLine2}
                   onChange={handleChange}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  className={getInputClass("addressLine2")}
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 <div>
                   <label className="mb-2 block font-medium text-gray-700">
                     State
                   </label>
-
                   <input
                     name="state"
                     value={formData.state}
                     onChange={handleChange}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                    className={getInputClass("state")}
                   />
                 </div>
 
                 <div>
                   <label className="mb-2 block font-medium text-gray-700">
-                    Country
+                    Country <span className="text-red-500">*</span>
                   </label>
-
                   <input
                     name="country"
                     value={formData.country}
                     onChange={handleChange}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                    className={getInputClass("country")}
                   />
+                  {errors.country && <p className="mt-1.5 text-sm text-red-600 font-medium">{errors.country}</p>}
                 </div>
 
                 <div>
                   <label className="mb-2 block font-medium text-gray-700">
                     Pincode
                   </label>
-
                   <input
                     name="pincode"
                     value={formData.pincode}
                     onChange={handleChange}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                    className={getInputClass("pincode")}
                   />
                 </div>
               </div>
@@ -181,21 +272,20 @@ export default function CreateCompany({ setActivePage }) {
 
           {/* Contact */}
           <section>
-            <h2 className="pt-3 mb-5 text-xl font-semibold text-gray-800">
+            <h2 className="mb-5 text-xl font-semibold text-gray-800  pb-2">
               Contact Information
             </h2>
 
-            <div className="grid grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               <div>
                 <label className="mb-2 block font-medium text-gray-700">
                   Telephone
                 </label>
-
                 <input
                   name="telephone"
                   value={formData.telephone}
                   onChange={handleChange}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  className={getInputClass("telephone")}
                 />
               </div>
 
@@ -203,12 +293,11 @@ export default function CreateCompany({ setActivePage }) {
                 <label className="mb-2 block font-medium text-gray-700">
                   Mobile
                 </label>
-
                 <input
                   name="mobile"
                   value={formData.mobile}
                   onChange={handleChange}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  className={getInputClass("mobile")}
                 />
               </div>
 
@@ -216,27 +305,26 @@ export default function CreateCompany({ setActivePage }) {
                 <label className="mb-2 block font-medium text-gray-700">
                   Fax
                 </label>
-
                 <input
                   name="fax"
                   value={formData.fax}
                   onChange={handleChange}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  className={getInputClass("fax")}
                 />
               </div>
             </div>
 
-            <div className="flex flex-col gap-2 mt-5 space-y-5">
+            <div className="flex flex-col gap-5 mt-5">
               <div>
                 <label className="mb-2 block font-medium text-gray-700">
                   E-Mail
                 </label>
-
                 <input
+                  type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  className={getInputClass("email")}
                 />
               </div>
 
@@ -244,12 +332,11 @@ export default function CreateCompany({ setActivePage }) {
                 <label className="mb-2 block font-medium text-gray-700">
                   Website
                 </label>
-
                 <input
                   name="website"
                   value={formData.website}
                   onChange={handleChange}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  className={getInputClass("website")}
                 />
               </div>
             </div>
@@ -257,77 +344,78 @@ export default function CreateCompany({ setActivePage }) {
 
           {/* Financial */}
           <section>
-            <h2 className="pt-3 mb-5 text-xl font-semibold text-gray-800">
+            <h2 className="mb-5 text-xl font-semibold text-gray-800 pb-2">
               Financial Information
             </h2>
 
-            <div className="grid grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
                 <label className="mb-2 block font-medium text-gray-700">
-                  Base Currency Symbol
+                  Base Currency Symbol <span className="text-red-500">*</span>
                 </label>
-
                 <input
                   name="currencySymbol"
                   value={formData.currencySymbol}
                   onChange={handleChange}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  className={getInputClass("currencySymbol")}
                 />
+                {errors.currencySymbol && <p className="mt-1.5 text-sm text-red-600 font-medium">{errors.currencySymbol}</p>}
               </div>
 
               <div>
                 <label className="mb-2 block font-medium text-gray-700">
-                  Formal Name
+                  Formal Name <span className="text-red-500">*</span>
                 </label>
-
                 <input
-                  name="formalName"
-                  value={formData.formalName}
+                  name="currencyName"
+                  value={formData.currencyName}
                   onChange={handleChange}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  className={getInputClass("currencyName")}
                 />
+                {errors.currencyName && <p className="mt-1.5 text-sm text-red-600 font-medium">{errors.currencyName}</p>}
               </div>
 
               <div>
                 <label className="mb-2 block font-medium text-gray-700">
-                  Financial Year Beginning From
+                  Financial Year Beginning From <span className="text-red-500">*</span>
                 </label>
-
-                <input
-                  type="date"
-                  name="financialYear"
-                  value={formData.financialYear}
-                  onChange={handleChange}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block font-medium text-gray-700">
-                  Books Beginning From
-                </label>
-
                 <input
                   type="date"
-                  name="booksBeginning"
-                  value={formData.booksBeginning}
+                  name="financialYearFrom"
+                  value={formData.financialYearFrom}
                   onChange={handleChange}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  className={getInputClass("financialYearFrom")}
                 />
+                {errors.financialYearFrom && <p className="mt-1.5 text-sm text-red-600 font-medium">{errors.financialYearFrom}</p>}
+              </div>
+
+              <div>
+                <label className="mb-2 block font-medium text-gray-700">
+                  Books Beginning From <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  name="booksBeginningFrom"
+                  value={formData.booksBeginningFrom}
+                  onChange={handleChange}
+                  className={getInputClass("booksBeginningFrom")}
+                />
+                {errors.booksBeginningFrom && <p className="mt-1.5 text-sm text-red-600 font-medium">{errors.booksBeginningFrom}</p>}
               </div>
             </div>
           </section>
         </div>
 
-        {/* Footer */}
-        <div className="flex justify-end gap-3 border-t border-gray-200 bg-gray-50 px-8 py-5">
-          <Button onClick={() => setActivePage("list")}>Cancel</Button>
 
-          <Button isActive onClick={handleCreate}>
+        <div className="flex justify-end gap-3 border-t border-gray-200 bg-gray-50 px-8 py-5">
+          <Button type="button" onClick={() => setActivePage("list")}>Cancel</Button>
+
+
+          <Button type="submit" isActive>
             Create Company
           </Button>
         </div>
-      </div>
+      </form>
     </div>
   );
 }
