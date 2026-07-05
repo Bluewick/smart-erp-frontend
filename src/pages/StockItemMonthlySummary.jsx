@@ -38,6 +38,22 @@ export default function StockItemMonthlySummary() {
     if (companyId && itemId) fetchMonthlySummary();
   }, [companyId, itemId, token]);
 
+     useEffect(() => {
+        const handleKeyDown = (e) => {
+            
+            // Escape → Back to Gateway (Home)
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                navigate(`/${companyId}/gateway`);
+                return;
+            }
+            
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [companyId, navigate]); 
+
   if (loading) {
     return (
       <div className="flex h-screen w-full flex-col items-center justify-center bg-slate-100 gap-2">

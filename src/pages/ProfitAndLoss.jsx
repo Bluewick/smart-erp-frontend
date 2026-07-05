@@ -52,6 +52,22 @@ export default function ProfitAndLoss() {
     if (companyId) fetchPLData();
   }, [companyId, token]);
 
+     useEffect(() => {
+        const handleKeyDown = (e) => {
+            
+            // Escape → Back to Gateway (Home)
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                navigate(`/${companyId}/gateway`);
+                return;
+            }
+            
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [companyId, navigate]); 
+
   // --- FINANCIAL ALGEBRAIC RULES (Matching Tally Layout Framework) ---
   const { openingStock, purchaseAccounts, salesAccounts, closingStock } = financials;
 

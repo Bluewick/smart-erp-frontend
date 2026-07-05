@@ -38,6 +38,22 @@ export default function StockSummary() {
     if (companyId) fetchStockStatus();
   }, [companyId, token]);
 
+     useEffect(() => {
+        const handleKeyDown = (e) => {
+            
+            // Escape → Back to Gateway (Home)
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                navigate(`/${companyId}/gateway`);
+                return;
+            }
+            
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [companyId, navigate]); 
+
   // Derived Totals calculation for the bottom Grand Total row
   const totalQuantity = stockItems.reduce((sum, item) => sum + (parseFloat(item.opening_qty) || 0), 0);
   const totalValue = stockItems.reduce((sum, item) => sum + (parseFloat(item.opening_value) || 0), 0);

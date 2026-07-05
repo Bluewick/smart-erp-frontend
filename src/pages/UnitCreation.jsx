@@ -85,6 +85,22 @@ export default function UnitCreation() {
     if (isEditMode) fetchUnitData();
   }, [companyId, unitId, isEditMode, token]);
 
+     useEffect(() => {
+        const handleKeyDown = (e) => {
+            
+            // Escape → Back to Gateway (Home)
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                navigate(`/${companyId}/gateway`);
+                return;
+            }
+            
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [companyId, navigate]); 
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
