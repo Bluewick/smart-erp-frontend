@@ -23,8 +23,7 @@ const NAV_ITEMS = [
   { label: "Import", shortcut: "O" },
   { label: "Export", shortcut: "E" },
   { label: "Share", shortcut: "M" },
-  { label: "Print", shortcut: "P" },
-  { label: "Help", shortcut: "F1" },
+  { label: "Print", shortcut: "P" }
 ];
 
 // Build a quick lookup: "K" -> "Company", "Y" -> "Data", etc.
