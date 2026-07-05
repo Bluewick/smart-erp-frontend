@@ -25,9 +25,21 @@ export const AuthProvider = ({children}) => {
         }
     }, []);
     
+    const login = (newToken) => {
+        localStorage.setItem("authToken", newToken);
+        setToken(newToken);
+        try {
+            const decoded = jwtDecode(newToken);
+            setUser(decoded);
+        } catch (err) {
+            console.error("Invalid token on login");
+        }
+    };
+
     const value = {
         token,
         user,
+        login,
         logout: () => {
             localStorage.removeItem("authToken");
             setToken(null);

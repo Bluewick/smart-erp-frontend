@@ -1,12 +1,11 @@
 import { Search } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 
 export default function ListOfMasters({ onSelect }) {
-
   const [searchQuery, setSearchQuery] = useState("");
-
-
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const listRef = useRef(null);
 
   const masterGroups = [
     {
@@ -53,6 +52,48 @@ export default function ListOfMasters({ onSelect }) {
     }))
     .filter((group) => group.items.length > 0);
 
+  // Flat list of all visible items in render order
+  const flatItems = filteredGroups.flatMap((g) => g.items);
+  const total = flatItems.length;
+
+  // Reset highlight when search changes
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [searchQuery]);
+
+  // Keyboard navigation inside modal
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        e.stopPropagation();
+        setSelectedIndex(i => (i + 1) % total);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        e.stopPropagation();
+        setSelectedIndex(i => (i - 1 + total) % total);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        if (flatItems[selectedIndex]) {
+          onSelect?.(flatItems[selectedIndex].action);
+        }
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [total, selectedIndex, flatItems, onSelect]);
+
+  // Keep highlighted item scrolled into view
+  useEffect(() => {
+    if (!listRef.current) return;
+    const highlighted = listRef.current.querySelector('[data-highlighted="true"]');
+    highlighted?.scrollIntoView({ block: 'nearest' });
+  }, [selectedIndex]);
+
+  // Build a flat counter to map each item to a global index
+  let globalIdx = 0;
+
   return (
     <div className="flex flex-col w-full max-h-[60vh]">
       <div className="relative mb-4">
@@ -69,7 +110,7 @@ export default function ListOfMasters({ onSelect }) {
         />
       </div>
 
-      <div className="flex-1 overflow-y-auto pr-1 space-y-4 divide-y divide-gray-100">
+      <div ref={listRef} className="flex-1 overflow-y-auto pr-1 space-y-4 divide-y divide-gray-100">
         {filteredGroups.length === 0 ? (
           <p className="text-center text-sm text-gray-400 py-4">No masters found matching your search.</p>
         ) : (
@@ -79,15 +120,24 @@ export default function ListOfMasters({ onSelect }) {
                 {group.title}
               </h4>
               <div className="space-y-0.5">
-                {group.items.map((item) => (
-                  <button
-                    key={item.action}
-                    onClick={() => onSelect?.(item.action)}
-                    className="w-full text-left px-3 py-2 rounded-lg text-sm text-gray-700 font-medium hover:bg-amber-500 hover:text-white group transition-colors duration-150 flex items-center justify-between"
-                  >
-                    <span>{item.name}</span>
-                  </button>
-                ))}
+                {group.items.map((item) => {
+                  const idx = globalIdx++;
+                  const isActive = idx === selectedIndex;
+                  return (
+                    <button
+                      key={item.action}
+                      data-highlighted={isActive}
+                      onClick={() => onSelect?.(item.action)}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150 flex items-center justify-between border-l-2 ${
+                        isActive
+                          ? 'bg-amber-500 text-white border-amber-600'
+                          : 'text-gray-700 border-transparent hover:bg-amber-500 hover:text-white'
+                      }`}
+                    >
+                      <span>{item.name}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           ))

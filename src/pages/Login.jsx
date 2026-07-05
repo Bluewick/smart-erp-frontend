@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/authContext";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -46,7 +48,7 @@ export default function Login() {
 
       const { token, user } = result.data;
 
-      localStorage.setItem("authToken", token);
+      login(token);
 
       console.log(`Welcome back, ${user.full_name}!`);
 

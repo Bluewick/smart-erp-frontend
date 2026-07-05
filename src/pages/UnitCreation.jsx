@@ -176,7 +176,7 @@ export default function UnitCreation() {
           {/* Preset Helper Dropdown Option */}
           {!isEditMode && (
             <div className="grid grid-cols-3 items-center gap-4 bg-blue-50/50 p-3 rounded-xl border border-blue-100 mb-2">
-              <label className="text-xs font-bold text-blue-700 uppercase tracking-wider">Load Preset Template</label>
+              <label className="text-xs font-bold text-blue-700 uppercase tracking-wider">Presets:</label>
               <select onChange={handlePresetChange} className="col-span-2 w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm bg-white focus:border-blue-500 focus:outline-none">
                 <option value="">-- Choose Common Unit Type --</option>
                 {PRESET_UNITS.map((u) => (

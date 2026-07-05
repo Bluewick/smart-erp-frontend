@@ -82,6 +82,7 @@ export default function Header() {
     navigate("/login");
   }
 
+  // Global shortcuts: Ctrl+Q → Logout | Ctrl+Shift+H → Home
   // Alt + shortcut key → open/toggle menu  |  Escape → close
   useEffect(() => {
     function handleKeyDown(e) {
@@ -89,6 +90,21 @@ export default function Header() {
         setOpenMenu(null);
         return;
       }
+
+      // Ctrl + Q → Logout
+      if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key === "q") {
+        e.preventDefault();
+        handleLogout();
+        return;
+      }
+
+      // Ctrl + Shift + H → Home (companies list)
+      if (e.ctrlKey && e.shiftKey && !e.altKey && e.key === "H") {
+        e.preventDefault();
+        navigate("/companies");
+        return;
+      }
+
       if (e.altKey) {
         const key = e.key.toUpperCase();
         const label = SHORTCUT_MAP[key];
@@ -100,7 +116,7 @@ export default function Header() {
     }
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [navigate, logout]);
 
   function handleButtonClick(label) {
     setOpenMenu((prev) => (prev === label ? null : label));

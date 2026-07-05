@@ -70,6 +70,24 @@ export default function PurchaseVoucherCreation() {
 
     useEffect(() => {
         const handleKeyDown = (e) => {
+            // F8 → Sales Voucher
+            if (e.key === 'F8') {
+                e.preventDefault();
+                setVoucherType('SALES');
+                return;
+            }
+            // F9 → Purchase Voucher
+            if (e.key === 'F9') {
+                e.preventDefault();
+                setVoucherType('PURCHASE');
+                return;
+            }
+            // Escape → Back to Gateway (Home)
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                navigate(`/${companyId}/gateway`);
+                return;
+            }
             // Intercepts Ctrl + Alt + P
             if (e.ctrlKey && e.altKey && e.key.toLowerCase() === "p") {
             e.preventDefault();
@@ -83,7 +101,8 @@ export default function PurchaseVoucherCreation() {
 
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [voucherData, itemRows]); 
+    }, [voucherData, itemRows, companyId, navigate]); 
+
 
 
 
@@ -783,19 +802,7 @@ export default function PurchaseVoucherCreation() {
             <span>E: Export</span>
             <span className="text-gray-400 font-normal">Ctrl+Alt+E</span>
         </button>
-        
-        <button type="button" disabled className="w-full text-left px-3 py-2 border-b border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed flex justify-between">
-          <span>F4: Contra</span><span className="text-[9px] text-gray-400"></span>
-        </button>
-        <button type="button" disabled className="w-full text-left px-3 py-2 border-b border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed flex justify-between">
-          <span>F5: Payment</span><span className="text-[9px] text-gray-400"></span>
-        </button>
-        <button type="button" disabled className="w-full text-left px-3 py-2 border-b border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed flex justify-between">
-          <span>F6: Receipt</span><span className="text-[9px] text-gray-400"></span>
-        </button>
-        <button type="button" disabled className="w-full text-left px-3 py-2 border-b border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed flex justify-between">
-          <span>F7: Journal</span><span className="text-[9px] text-gray-400"></span>
-        </button>
+
 
 
 
